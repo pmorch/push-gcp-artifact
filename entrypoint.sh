@@ -6,10 +6,10 @@ function usage {
     fi
     echo <<'EOT' > /dev/stderr
 docker run \
-    -rm \
-    -v /var/run/docker.sock:/var/run/docker.sock
+    --rm \
+    -v /var/run/docker.sock:/var/run/docker.sock \
     -v $PWD/keyfile:/keyfile \
-    -e ARTIFACT_LOCATION=europe-west4
+    -e ARTIFACT_LOCATION=europe-west4 \
     push-gcp-artifact \
     europe-west4-docker.pkg.dev/civil-partition-123456/dockerrepo/imagename
 
@@ -20,7 +20,7 @@ EOT
 }
 
 KEYFILE=/keyfile
-if [ ! -r $KEYFILE ] ; then
+if [ ! -f $KEYFILE -o ! -r $KEYFILE ] ; then
     usage "Couldn't read $KEYFILE"
     exit 1
 fi
@@ -37,6 +37,7 @@ fi
 IMAGE_NAME=$1
 shift
 
+# See https://cloud.google.com/artifact-registry/docs/docker/authentication#standalone-helper
 docker-credential-gcr configure-docker --registries=$ARTIFACT_LOCATION
 cat $KEYFILE | \
     docker login -u _json_key --password-stdin \
